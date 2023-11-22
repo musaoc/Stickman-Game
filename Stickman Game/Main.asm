@@ -22,11 +22,11 @@ INCLUDE C:\Irvine\Irvine32.inc
 						"    / \ ", 0dh,
 						"   /   \"
 
-	char1PosX      DWORD 12
-	char1PosY      DWORD 7
+	p1PosX      DWORD 12
+	p1PosY      DWORD 7
 
-	char2PosX      DWORD 22
-	char2PosY      DWORD 7
+	p2PosX      DWORD 22
+	p2PosY      DWORD 7
 
 
 .code
@@ -146,7 +146,33 @@ DislayScreen PROC
 	ret
 
 DislayScreen ENDP
-	
+
+; Handle Keyoard Input
+LookForKey PROC
+	; Player1
+
+	CMP AL, 'd'
+	JNE P1NoL
+	INC p1PosX
+	P1NoL:
+
+	CMP AL, 'a'
+	JNE P1NoR
+	DEC p1PosX
+	P1NoR:
+
+	CMP AH, 04Bh
+	JNE P2NoL
+	DEC p2PosX
+	P2NoL:
+
+	CMP AH, 04Dh
+	JNE P2NoR
+	INC p2PosX
+	P2NoR:
+
+	ret
+LookForKey ENDP
 
 main PROC
 
@@ -159,15 +185,20 @@ main PROC
 		CALL  InitializeScreen
 
 		CALL ReadKey
-		CMP  al, 'w'
-		JNZ NOMOVEUP
-		dec char1PosY
-		NOMOVEUP:
+		JZ NoKeyPressed
+		CALL LookForKey
+		NoKeyPressed:
 
-		push char1PosX
-		push char1PosY
+		push p1PosX
+		push p1PosY
 		PUSH SIZEOF char1
 		PUSH OFFSET char1
+		CALL PrintAt
+
+		push p2PosX
+		push p2PosY
+		PUSH SIZEOF char2
+		PUSH OFFSET char2
 		CALL PrintAt
 
 		
