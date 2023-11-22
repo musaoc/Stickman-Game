@@ -27,6 +27,9 @@ INCLUDE C:\Irvine\Irvine32.inc
 
 	p2PosX      DWORD 22
 	p2PosY      DWORD 7
+	
+	p1jmp       DWORD 0
+	p2jmp       DWORD 0
 
 
 .code
@@ -80,13 +83,13 @@ PrintAt PROC
 		LOOP LoopStart
 		JMP endprocedure
 	newLineCame:
-			INC y
-			MOV eax, [ebp + 20]
-			MOV x, eax
-			INC ebx
+		INC y
+		MOV eax, [ebp + 20]
+		MOV x, eax
+		INC ebx
 
-			POP ecx
-			LOOP LoopStart
+		POP ecx
+		LOOP LoopStart
 
 	endprocedure:
 	ret 16
@@ -139,6 +142,8 @@ InitializeScreen PROC
 
 InitializeScreen ENDP
 
+
+
 DislayScreen PROC
 
 	MOV edx, OFFSET screen2D
@@ -147,6 +152,31 @@ DislayScreen PROC
 
 DislayScreen ENDP
 
+jmpPlayers PROC
+	; dec from p1jmp if it is not zero
+	CMP p1jmp, 0
+	JG p1jump
+	MOV p1PosY, 7
+	JMP NoSub
+	p1jump:
+		SUB p1jmp, 160
+		ret
+	NoSub:
+
+	; dec from p1jmp if it is not zero
+	CMP p2jmp, 0
+	JG p2jump
+	MOV p2PosY, 7
+	JMP NoSub2
+	p2jump:
+		SUB p2jmp, 160
+		ret
+	NoSub2:
+	
+		
+	ret
+jmpPlayers ENDP
+
 ; Handle Keyoard Input
 LookForKey PROC
 	; Player1
@@ -154,21 +184,45 @@ LookForKey PROC
 	CMP AL, 'd'
 	JNE P1NoL
 	INC p1PosX
+	ret
 	P1NoL:
 
 	CMP AL, 'a'
 	JNE P1NoR
 	DEC p1PosX
+	ret
 	P1NoR:
+
+	CMP AL, 'w'
+	JNE P1NoJ
+	; If player already not jumping then p1jmp should be zero
+	CMP p1jmp, 0
+	JG P1NOJ
+	SUB p1PosY, 3
+	MOV p1jmp, 2000
+	ret
+	P1NoJ:
+
+	CMP AH, 048h ; UP Key
+	JNE P2NoJ
+	; If player already not jumping then p1jmp should be zero
+	CMP p2jmp, 0
+	JG P2NOJ
+	SUB p2PosY, 3
+	MOV p2jmp, 2000
+	ret
+	P2NoJ:
 
 	CMP AH, 04Bh
 	JNE P2NoL
 	DEC p2PosX
+	ret
 	P2NoL:
 
 	CMP AH, 04Dh
 	JNE P2NoR
 	INC p2PosX
+	ret
 	P2NoR:
 
 	ret
@@ -188,6 +242,8 @@ main PROC
 		JZ NoKeyPressed
 		CALL LookForKey
 		NoKeyPressed:
+
+		Call jmpPlayers
 
 		push p1PosX
 		push p1PosY
