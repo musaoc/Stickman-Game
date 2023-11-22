@@ -9,7 +9,24 @@ INCLUDE C:\Irvine\Irvine32.inc
 	newLine        BYTE 0dh
 	carriageReturn BYTE 0ah
 
-	screenBoundary  BYTE "========================================",0dh
+	screenBoundary BYTE "========================================",0dh
+
+	char1          BYTE "  O    / ", 0dh,
+						" /|\  /  ", 0dh,
+						"/ | \/   ", 0dh,
+						" / \     ", 0dh,
+						"/   \    "
+	char2          BYTE "\    O  ", 0dh,
+						" \  /|\ ", 0dh,
+						"  \/ | \", 0dh,
+						"    / \ ", 0dh,
+						"   /   \"
+
+	char1PosX      DWORD 12
+	char1PosY      DWORD 7
+
+	char2PosX      DWORD 22
+	char2PosY      DWORD 7
 
 
 .code
@@ -77,6 +94,16 @@ PrintAt PROC
 PrintAt ENDP
 
 InitializeScreen PROC
+	; settings screen2D all values to 32 
+	MOV eax, rows
+	MOV ebx, columns
+	MUL ebx
+	MOV ecx, eax
+
+	LoopS:
+		MOV screen2D[ecx - 1], 32
+		LOOP LoopS
+
 	MOV eax, 0
 	MOV ecx, rows
 	
@@ -123,11 +150,41 @@ DislayScreen ENDP
 
 main PROC
 
-	CALL InitializeScreen
+	CALL GetMSeconds
+	MOV ebx, eax
+
+	MOV ecx, 1000
 	
+	LoopStart:
+		CALL  InitializeScreen
+
+		CALL ReadKey
+		CMP  al, 'w'
+		JNZ NOMOVEUP
+		dec char1PosY
+		NOMOVEUP:
+
+		push char1PosX
+		push char1PosY
+		PUSH SIZEOF char1
+		PUSH OFFSET char1
+		CALL PrintAt
+
+		
+
+		CALL  DislayScreen
+		MOV   eax, 32
+		Call  Delay
+		CALL  Clrscr
+		
+	JMP LoopStart
 	
-	
-	CALL DislayScreen
+
+	CALL GetMSeconds
+
+	SUB eax, ebx
+
+	Call WriteDec
 
 	INVOKE ExitProcess, 0
 
