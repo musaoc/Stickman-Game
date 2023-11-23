@@ -12,15 +12,15 @@ INCLUDE C:\Irvine\Irvine32.inc
 	screenBoundary BYTE "========================================",0dh
 
 	char1          BYTE "  O    / ", 0dh,
-						" /|\  /  ", 0dh,
-						"/ | \/   ", 0dh,
-						" / \     ", 0dh,
-						"/   \    "
+                        " /|\  /  ", 0dh,
+                        "/ | \/   ", 0dh,
+                        " /'\     ", 0dh,
+                        "/   \    "
 	char2          BYTE "\    O  ", 0dh,
-						" \  /|\ ", 0dh,
-						"  \/ | \", 0dh,
-						"    / \ ", 0dh,
-						"   /   \"
+                        " \  /|\ ", 0dh,
+                        "  \/ | \", 0dh,
+                        "    /'\ ", 0dh,
+                        "   /   \"
 
 	p1PosX      DWORD 12
 	p1PosY      DWORD 7
@@ -35,7 +35,7 @@ INCLUDE C:\Irvine\Irvine32.inc
 .code
 
 ; Put String into the screen
-PrintAt PROC
+PutAtScreen PROC
 	; x position of screen
 	; y position of screen
 	; size of string
@@ -94,7 +94,7 @@ PrintAt PROC
 	endprocedure:
 	ret 16
 
-PrintAt ENDP
+PutAtScreen ENDP
 
 InitializeScreen PROC
 	; settings screen2D all values to 32 
@@ -129,14 +129,14 @@ InitializeScreen PROC
 	push 0
 	push sizeof screenBoundary
 	push offset screenBoundary
-	Call PrintAt
+	Call PutAtScreen
 	
 	; displaying lower boundary
 	push 1
 	push rows-1
 	push sizeof screenBoundary
 	push offset screenBoundary
-	CALL PrintAt
+	CALL PutAtScreen
 
 	ret
 
@@ -159,7 +159,7 @@ jmpPlayers PROC
 	MOV p1PosY, 7
 	JMP NoSub
 	p1jump:
-		SUB p1jmp, 160
+		SUB p1jmp, 100
 		ret
 	NoSub:
 
@@ -169,7 +169,7 @@ jmpPlayers PROC
 	MOV p2PosY, 7
 	JMP NoSub2
 	p2jump:
-		SUB p2jmp, 160
+		SUB p2jmp, 100
 		ret
 	NoSub2:
 	
@@ -199,7 +199,7 @@ LookForKey PROC
 	CMP p1jmp, 0
 	JG P1NOJ
 	SUB p1PosY, 3
-	MOV p1jmp, 2000
+	MOV p1jmp, 500
 	ret
 	P1NoJ:
 
@@ -209,7 +209,7 @@ LookForKey PROC
 	CMP p2jmp, 0
 	JG P2NOJ
 	SUB p2PosY, 3
-	MOV p2jmp, 2000
+	MOV p2jmp, 500
 	ret
 	P2NoJ:
 
@@ -249,20 +249,19 @@ main PROC
 		push p1PosY
 		PUSH SIZEOF char1
 		PUSH OFFSET char1
-		CALL PrintAt
+		CALL PutAtScreen
 
 		push p2PosX
 		push p2PosY
 		PUSH SIZEOF char2
 		PUSH OFFSET char2
-		CALL PrintAt
+		CALL PutAtScreen
 
 		
-
+		CALL  Clrscr
 		CALL  DislayScreen
 		MOV   eax, 32
 		Call  Delay
-		CALL  Clrscr
 		
 	JMP LoopStart
 	
