@@ -8,7 +8,7 @@ INCLUDE C:\Irvine\Irvine32.inc
 	screen2D       BYTE rows*columns dup(32), 0
 
 	pJmpTime       EQU 10
-	pStateTime     EQU 5
+	pStateTime     EQU 10
 
 	; -------------------------------------------
 
@@ -29,17 +29,27 @@ INCLUDE C:\Irvine\Irvine32.inc
                         " / \ ", 0dh,
                         "/   \"
 
-	char1su        BYTE "  O    /", 0dh,
+	char1sa        BYTE "  O    /", 0dh,
                         " /|\  / ", 0dh,
                         "/ 1 \/  ", 0dh,
                         " / \    ", 0dh,
                         "/   \   "
 
-	char2su        BYTE "\    O  ", 0dh,
+	char2sa        BYTE "\    O  ", 0dh,
                         " \  /|\ ", 0dh,
                         "  \/ 2 \", 0dh,
                         "    / \ ", 0dh,
                         "   /   \"
+	char1sd        BYTE "  O  |", 0dh,
+                        " /|\ |", 0dh,
+                        "/ 1 \|", 0dh,
+                        " / \  ", 0dh,
+                        "/   \ "
+	char2sd        BYTE "|  O  ", 0dh,
+                        "| /|\ ", 0dh,
+                        "|/ 2 \", 0dh,
+                        "  / \  ", 0dh,
+                        " /   \ "
 
 	p1PosX      DWORD 12
 	p1PosY      DWORD 7
@@ -55,6 +65,9 @@ INCLUDE C:\Irvine\Irvine32.inc
 
 	p2StateTime DWORD 0
 	p2State     DWORD 0
+
+	p1Health    BYTE 'P1: 9'
+	p2Health    BYTE 'P2: 9'
 
 
 .code
@@ -247,14 +260,23 @@ LookForKey PROC
 	ret
 	P1NoJ:
 
-	CMP AL, 'e'
-	JNE P1NoSC            ; Player 1 no state changed
+	CMP AL, 'f'
+	JNE P1NoSA                  ; Player 1 no state attack
 	CMP p1State, 0
-	JG P1NoSC
+	JG P1NoSA
 	MOV p1state, 1
 	MOV p1StateTime, pStateTime ; Setting time for player1 state
 	ret
-	P1NoSC:
+	P1NoSA:
+
+	CMP AL, 'e'
+	JNE P1NoSD                  ; Player 1 no state defend
+	CMP p1State, 0
+	JG P1NoSD
+	MOV p1state, 2
+	MOV p1StateTime, pStateTime ; Setting time for player1 state
+	ret
+	P1NoSD:
 
 	; --------- PLAYER 2 CONTROLS ----------------
 
@@ -289,10 +311,19 @@ LookForKey PROC
 	ret
 	P2NoSC:
 
+	CMP AL, ','
+	JNE P2NoSD                  ; Player 2 no state defend
+	CMP p2State, 0
+	JG P2NoSD
+	MOV p2state, 2
+	MOV p2StateTime, pStateTime ; Setting time for player1 state
+	ret
+	P2NoSD:
+
 	ret
 LookForKey ENDP
 
-DisplayP1 PROC
+PutPlayer1 PROC
 	push p1PosX
 	push p1PosY
 
@@ -301,6 +332,9 @@ DisplayP1 PROC
 	
 	CMP p1State, 1
 	JE p1State1
+
+	CMP p1State, 2
+	JE p1State2
 	
 	p1State0:
 		PUSH SIZEOF char1
@@ -308,21 +342,29 @@ DisplayP1 PROC
 		JMP ShowPlayer
 
 	p1State1:
-		PUSH SIZEOF char1su
-		PUSH OFFSET char1su
+		PUSH SIZEOF char1sa
+		PUSH OFFSET char1sa
+		JMP ShowPlayer
+
+	p1State2:
+		PUSH SIZEOF char1sd
+		PUSH OFFSET char1sd
 		JMP ShowPlayer
 
 	ShowPlayer:
 		CALL PutAtScreen
 	ret
-DisplayP1 ENDP
+PutPlayer1 ENDP
 
-DisplayP2 PROC
+PutPlayer2 PROC
 	CMP p2State, 0
 	JE p2State0
 	
 	CMP p2State, 1
 	JE p2State1
+
+	CMP p2State, 2
+	JE p2State2
 	
 	p2State0:
 		push p2PosX
@@ -332,19 +374,47 @@ DisplayP2 PROC
 		JMP ShowPlayer
 
 	p2State1:
-		Sub p2PosX, 3
-		push p2PosX        ; To display character movement propoerly
-		Add p2PosX, 3      ; it is needed to 
+		SUB p2PosX, 3
+		PUSH p2PosX        ; To display character movement propoerly
+		ADD p2PosX, 3      ; it is needed to subtract -3
 		push p2PosY
 		
-		PUSH SIZEOF char2su
-		PUSH OFFSET char2su
+		PUSH SIZEOF char2sa
+		PUSH OFFSET char2sa
+		JMP ShowPlayer
+
+	p2State2:
+		SUB p2PosX, 1
+		PUSH p2PosX        ; To display character movement propoerly
+		ADD p2PosX, 1      ; it is needed to subtract -1
+
+		push p2PosY
+
+		PUSH SIZEOF char2sd
+		PUSH OFFSET char2sd
 		JMP ShowPlayer
 
 	ShowPlayer:
 		CALL PutAtScreen
 	ret
-DisplayP2 ENDP
+PutPlayer2 ENDP
+
+PutPlayersHealth PROC
+
+	PUSH 2
+	PUSH 1
+	PUSH SIZEOF p1Health
+	PUSH OFFSET p1Health
+	Call PutAtScreen
+
+	PUSH 35
+	PUSH 1
+	PUSH SIZEOF p2Health
+	PUSH OFFSET p2Health
+	Call PutAtScreen
+	ret
+
+PutPlayersHealth ENDP
 
 main PROC
 
@@ -364,10 +434,10 @@ main PROC
 		Call jmpPlayers
 		Call setState
 
-		call DisplayP1
-		
+		call PutPlayer1
+		call PutPlayer2
 
-		call DisplayP2
+		call PutPlayersHealth
 
 		
 		CALL  Clrscr
