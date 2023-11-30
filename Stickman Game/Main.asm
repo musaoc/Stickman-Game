@@ -19,25 +19,25 @@ INCLUDE C:\Irvine\Irvine32.inc
 
 	char1          BYTE "  O  ", 0dh,
                         " /|\ ", 0dh,
-                        "/ | \", 0dh,
+                        "/ 1 \", 0dh,
                         " / \ ", 0dh,
                         "/   \"
 
 	char2          BYTE "  O  ", 0dh,
                         " /|\ ", 0dh,
-                        "/ | \", 0dh,
+                        "/ 2 \", 0dh,
                         " / \ ", 0dh,
                         "/   \"
 
 	char1su        BYTE "  O    /", 0dh,
                         " /|\  / ", 0dh,
-                        "/ | \/  ", 0dh,
+                        "/ 1 \/  ", 0dh,
                         " / \    ", 0dh,
                         "/   \   "
 
 	char2su        BYTE "\    O  ", 0dh,
                         " \  /|\ ", 0dh,
-                        "  \/ | \", 0dh,
+                        "  \/ 2 \", 0dh,
                         "    / \ ", 0dh,
                         "   /   \"
 
@@ -318,9 +318,6 @@ DisplayP1 PROC
 DisplayP1 ENDP
 
 DisplayP2 PROC
-	push p2PosX
-	push p2PosY
-
 	CMP p2State, 0
 	JE p2State0
 	
@@ -328,11 +325,18 @@ DisplayP2 PROC
 	JE p2State1
 	
 	p2State0:
+		push p2PosX
+		push p2PosY
 		PUSH SIZEOF char2
 		PUSH OFFSET char2
 		JMP ShowPlayer
 
 	p2State1:
+		Sub p2PosX, 3
+		push p2PosX        ; To display character movement propoerly
+		Add p2PosX, 3      ; it is needed to 
+		push p2PosY
+		
 		PUSH SIZEOF char2su
 		PUSH OFFSET char2su
 		JMP ShowPlayer
