@@ -2,24 +2,43 @@ INCLUDELIB C:\Irvine\Irvine32.lib
 INCLUDE C:\Irvine\Irvine32.inc
 
 .data
+	; ------------- GAME CONFIG -----------------
 	rows           EQU 15
 	columns        EQU 44
 	screen2D       BYTE rows*columns dup(32), 0
+
+	pJmpTime       EQU 10
+	pStateTime     EQU 5
+
+	; -------------------------------------------
 
 	newLine        BYTE 0dh
 	carriageReturn BYTE 0ah
 
 	screenBoundary BYTE "========================================",0dh
 
-	char1          BYTE "  O    / ", 0dh,
-                        " /|\  /  ", 0dh,
-                        "/ | \/   ", 0dh,
-                        " /'\     ", 0dh,
-                        "/   \    "
-	char2          BYTE "\    O  ", 0dh,
+	char1          BYTE "  O  ", 0dh,
+                        " /|\ ", 0dh,
+                        "/ | \", 0dh,
+                        " / \ ", 0dh,
+                        "/   \"
+
+	char2          BYTE "  O  ", 0dh,
+                        " /|\ ", 0dh,
+                        "/ | \", 0dh,
+                        " / \ ", 0dh,
+                        "/   \"
+
+	char1su        BYTE "  O    /", 0dh,
+                        " /|\  / ", 0dh,
+                        "/ | \/  ", 0dh,
+                        " / \    ", 0dh,
+                        "/   \   "
+
+	char2su        BYTE "\    O  ", 0dh,
                         " \  /|\ ", 0dh,
                         "  \/ | \", 0dh,
-                        "    /'\ ", 0dh,
+                        "    / \ ", 0dh,
                         "   /   \"
 
 	p1PosX      DWORD 12
@@ -30,6 +49,12 @@ INCLUDE C:\Irvine\Irvine32.inc
 	
 	p1jmp       DWORD 0
 	p2jmp       DWORD 0
+
+	p1StateTime DWORD 0
+	p1State     DWORD 0
+
+	p2StateTime DWORD 0
+	p2State     DWORD 0
 
 
 .code
@@ -159,7 +184,7 @@ jmpPlayers PROC
 	MOV p1PosY, 7
 	JMP NoSub
 	p1jump:
-		SUB p1jmp, 100
+		SUB p1jmp, 1
 		ret
 	NoSub:
 
@@ -169,7 +194,7 @@ jmpPlayers PROC
 	MOV p2PosY, 7
 	JMP NoSub2
 	p2jump:
-		SUB p2jmp, 100
+		SUB p2jmp, 1
 		ret
 	NoSub2:
 	
@@ -177,9 +202,28 @@ jmpPlayers PROC
 	ret
 jmpPlayers ENDP
 
+setState PROC
+	CMP p1StateTime, 0
+	JE setStateToDefault1
+	SUB p1StateTime, 1
+	JMP Next
+	setStateToDefault1:
+	MOV p1State, 0
+
+	Next:
+	CMP p2StateTime, 0
+	JE setStateToDefault2
+	SUB p2StateTime, 1
+	ret
+	setStateToDefault2:
+	MOV p2State, 0
+
+	ret
+setState ENDP
+
 ; Handle Keyoard Input
 LookForKey PROC
-	; Player1
+	; ------------ Player1 CONTROLS ---------------
 
 	CMP AL, 'd'
 	JNE P1NoL
@@ -199,9 +243,20 @@ LookForKey PROC
 	CMP p1jmp, 0
 	JG P1NOJ
 	SUB p1PosY, 3
-	MOV p1jmp, 500
+	MOV p1jmp, pJmpTime
 	ret
 	P1NoJ:
+
+	CMP AL, 'e'
+	JNE P1NoSC            ; Player 1 no state changed
+	CMP p1State, 0
+	JG P1NoSC
+	MOV p1state, 1
+	MOV p1StateTime, pStateTime ; Setting time for player1 state
+	ret
+	P1NoSC:
+
+	; --------- PLAYER 2 CONTROLS ----------------
 
 	CMP AH, 048h ; UP Key
 	JNE P2NoJ
@@ -209,24 +264,83 @@ LookForKey PROC
 	CMP p2jmp, 0
 	JG P2NOJ
 	SUB p2PosY, 3
-	MOV p2jmp, 500
+	MOV p2jmp, pJmpTime
 	ret
 	P2NoJ:
 
-	CMP AH, 04Bh
+	CMP AH, 04Bh ; Left Key
 	JNE P2NoL
 	DEC p2PosX
 	ret
 	P2NoL:
 
-	CMP AH, 04Dh
+	CMP AH, 04Dh ; Right
 	JNE P2NoR
 	INC p2PosX
 	ret
 	P2NoR:
 
+	CMP AL, '.'
+	JNE P2NoSC            ; Player 2 no state changed
+	CMP p2State, 0
+	JG P2NoSC
+	MOV p2state, 1
+	MOV p2StateTime, pStateTime ; Setting time for player1 state
+	ret
+	P2NoSC:
+
 	ret
 LookForKey ENDP
+
+DisplayP1 PROC
+	push p1PosX
+	push p1PosY
+
+	CMP p1State, 0
+	JE p1State0
+	
+	CMP p1State, 1
+	JE p1State1
+	
+	p1State0:
+		PUSH SIZEOF char1
+		PUSH OFFSET char1
+		JMP ShowPlayer
+
+	p1State1:
+		PUSH SIZEOF char1su
+		PUSH OFFSET char1su
+		JMP ShowPlayer
+
+	ShowPlayer:
+		CALL PutAtScreen
+	ret
+DisplayP1 ENDP
+
+DisplayP2 PROC
+	push p2PosX
+	push p2PosY
+
+	CMP p2State, 0
+	JE p2State0
+	
+	CMP p2State, 1
+	JE p2State1
+	
+	p2State0:
+		PUSH SIZEOF char2
+		PUSH OFFSET char2
+		JMP ShowPlayer
+
+	p2State1:
+		PUSH SIZEOF char2su
+		PUSH OFFSET char2su
+		JMP ShowPlayer
+
+	ShowPlayer:
+		CALL PutAtScreen
+	ret
+DisplayP2 ENDP
 
 main PROC
 
@@ -244,18 +358,12 @@ main PROC
 		NoKeyPressed:
 
 		Call jmpPlayers
+		Call setState
 
-		push p1PosX
-		push p1PosY
-		PUSH SIZEOF char1
-		PUSH OFFSET char1
-		CALL PutAtScreen
+		call DisplayP1
+		
 
-		push p2PosX
-		push p2PosY
-		PUSH SIZEOF char2
-		PUSH OFFSET char2
-		CALL PutAtScreen
+		call DisplayP2
 
 		
 		CALL  Clrscr
