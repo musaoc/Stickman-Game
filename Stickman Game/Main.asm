@@ -51,6 +51,7 @@ INCLUDE C:\Irvine\Irvine32.inc
                         "  / \  ", 0dh,
                         " /   \ "
 
+	; ---------- DEFAULT STATES ---------------
 	p1PosX      DWORD 12
 	p1PosY      DWORD 7
 
