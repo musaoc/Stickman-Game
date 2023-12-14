@@ -1,5 +1,5 @@
-INCLUDELIB C:\Irvine\Irvine32.lib
-INCLUDE C:\Irvine\Irvine32.inc
+INCLUDELIB lib\Irvine32.lib
+INCLUDE lib\Irvine32.inc
 
 .data
 	; ------------- GAME CONFIG -----------------
