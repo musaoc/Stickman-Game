@@ -11,7 +11,10 @@ INCLUDE lib\Irvine32.inc
 
 	pJmpTime       EQU 3
 	pStateTime     EQU 3
-
+	UFCx Byte "        ___  ___  ",0dh,
+			 "  |   | |    |	", 0dh,
+	          " |   | |=== |	", 0dh,
+			  " |___| |    |___	",0
 	; -------------------------------------------
 
 	newLine        BYTE 0dh
@@ -81,17 +84,22 @@ INCLUDE lib\Irvine32.inc
 StartPrompt macro 
 mWriteStyledText
 	pushad
-	mov dl,40
-	mov dh,1
-	call gotoxy
-	mWritex "Welcome to the 300th edition of Kaka Fighting Championship"
+
+	; WRITE UFC 300 IN ASCII IN THREE LINES
+	
+	          
 	mov dl,40
 	mov dh,4
+	call gotoxy
+	mWritex "Welcome to the 300th edition of Kaka Fighting Championship"
+	
+	mov dl,40
+	mov dh,5
 	call gotoxy
 	mWritex "Introducing first!										   "		
 
 	mov dl,40
-	mov dh,5
+	mov dh,6
 	call gotoxy
 	mWritex "The Callenger from Dagestan Khabib THE EAGLE Nurmagomedov "
 	mov eax,5000
@@ -662,7 +670,13 @@ ENDM
 
 
 main PROC
-	
+
+	mWriteStyledText
+	mov dl,40
+	mov dh,0
+	call GOTOXY
+	mov edx,offset UFCx
+	call WriteString
 	StartPrompt 
 	dalayx 1000
 	CALL GetMSeconds
