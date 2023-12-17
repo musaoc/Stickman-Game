@@ -62,9 +62,11 @@ INCLUDE lib\Irvine32.inc
 	p2jmp       DWORD 0
 
 	p1StateTime DWORD 0
+	; 0 = default, 1 = state attack, 2 = state defend
 	p1State     DWORD 0
 
 	p2StateTime DWORD 0
+	; 0 = default, 1 = state attack, 2 = state defend
 	p2State     DWORD 0
 
 	p1Health    BYTE 'P1: 9'
@@ -72,6 +74,13 @@ INCLUDE lib\Irvine32.inc
 
 
 .code
+
+; States Structure
+States STRUCT
+	default BYTE 0
+	attack  BYTE 1
+	defend  BYTE 2
+States ENDS
 
 ; Put String into the screen
 PutAtScreen PROC
@@ -235,6 +244,20 @@ setState PROC
 	ret
 setState ENDP
 
+collisionCheck MACRO
+	.IF p1State == States.attack
+		.IF p2State == States.defend
+		.ENDIF
+			mov eax, p1PosX
+			add eax, 8
+			cmp eax, p2PosX
+			;jl skipHealthDec
+			dec p2Health[4]
+			;skipHealthDec:
+	.ENDIF
+ENDM
+
+
 ; Handle Keyoard Input
 LookForKey PROC
 	; ------------ Player1 CONTROLS ---------------
@@ -263,18 +286,19 @@ LookForKey PROC
 
 	CMP AL, 'f'
 	JNE P1NoSA                  ; Player 1 no state attack
-	CMP p1State, 0
+	CMP p1State, States.default
 	JG P1NoSA
-	MOV p1state, 1
+	MOV p1state, States.attack
 	MOV p1StateTime, pStateTime ; Setting time for player1 state
+	collisionCheck
 	ret
 	P1NoSA:
 
 	CMP AL, 'e'
 	JNE P1NoSD                  ; Player 1 no state defend
-	CMP p1State, 0
+	CMP p1State, States.default
 	JG P1NoSD
-	MOV p1state, 2
+	MOV p1state, States.defend
 	MOV p1StateTime, pStateTime ; Setting time for player1 state
 	ret
 	P1NoSD:
@@ -304,19 +328,20 @@ LookForKey PROC
 	P2NoR:
 
 	CMP AL, '.'
-	JNE P2NoSC            ; Player 2 no state changed
-	CMP p2State, 0
+	JNE P2NoSC            ; Player 2 attack
+	CMP p2State, States.default
 	JG P2NoSC
-	MOV p2state, 1
+	MOV p2state, States.attack
 	MOV p2StateTime, pStateTime ; Setting time for player1 state
+	collisionCheck
 	ret
 	P2NoSC:
 
 	CMP AL, ','
 	JNE P2NoSD                  ; Player 2 no state defend
-	CMP p2State, 0
+	CMP p2State, States.default
 	JG P2NoSD
-	MOV p2state, 2
+	MOV p2state, States.defend
 	MOV p2StateTime, pStateTime ; Setting time for player1 state
 	ret
 	P2NoSD:
@@ -400,6 +425,8 @@ PutPlayer2 PROC
 	ret
 PutPlayer2 ENDP
 
+
+
 PutPlayersHealth PROC
 
 	PUSH 2
@@ -416,6 +443,7 @@ PutPlayersHealth PROC
 	ret
 
 PutPlayersHealth ENDP
+
 
 main PROC
 
@@ -444,6 +472,8 @@ main PROC
 		CALL  Clrscr
 		CALL  DislayScreen
 		MOV   eax, 32
+
+		
 		Call  Delay
 		
 	JMP LoopStart
