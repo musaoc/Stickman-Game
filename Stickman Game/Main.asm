@@ -6,10 +6,10 @@ INCLUDE lib\Irvine32.inc
 	rows           EQU 15
 	columns        EQU 44
 	screen2D       BYTE rows*columns dup(32), 0
-	screenColors   BYTE rows*columns dup(16)
+	screenColors   BYTE rows*columns dup(15)
 
-	pJmpTime       EQU 10
-	pStateTime     EQU 10
+	pJmpTime       EQU 3
+	pStateTime     EQU 3
 
 	; -------------------------------------------
 
@@ -146,8 +146,11 @@ PutAtScreen PROC
 		JE newLineCame
 		
 		; moving character into screen2D
+		cmp cl, 32
+		je DontSetColor
 		MOV cl, [edx + ebx]
 		MOV screen2D[eax], cl
+		DontSetColor:
 
 		; moving color into screenColors
 		MOV ecx, color
@@ -206,7 +209,7 @@ InitializeScreen PROC
 	push 0
 	push sizeof screenBoundary
 	push offset screenBoundary
-	push 16
+	push 15
 	Call PutAtScreen
 	
 	; displaying lower boundary
@@ -214,22 +217,32 @@ InitializeScreen PROC
 	push rows-1
 	push sizeof screenBoundary
 	push offset screenBoundary
-	push 16
+	push 15
 	CALL PutAtScreen
 
 	ret
 
 InitializeScreen ENDP
 
-
-
-DislayScreen PROC
-
+DisplayScreenNC PROC
 	MOV edx, OFFSET screen2D
 	CALL WriteString
-	ret
+DisplayScreenNC ENDP
 
-DislayScreen ENDP
+
+DislayScreen MACRO
+
+	MOV ecx, LENGTHOF screen2D
+	MOV ebx, 0
+	.WHILE ebx < ecx
+		MOVZX eax, BYTE PTR screenColors[ebx]
+		CALL SetTextColor
+		MOV al, screen2D[ebx]
+		CALL WriteChar
+		INC ebx
+	.ENDW
+
+ENDM
 
 jmpPlayers PROC
 	; dec from p1jmp if it is not zero
@@ -418,7 +431,7 @@ PutPlayer1 PROC
 		JMP ShowPlayer
 
 	ShowPlayer:
-		PUSH 16
+		PUSH Colors.BLUE
 		CALL PutAtScreen
 	ret
 PutPlayer1 ENDP
@@ -462,7 +475,7 @@ PutPlayer2 PROC
 		JMP ShowPlayer
 
 	ShowPlayer:
-		PUSH 16
+		PUSH 15
 		CALL PutAtScreen
 	ret
 PutPlayer2 ENDP
@@ -475,14 +488,14 @@ PutPlayersHealth PROC
 	PUSH 1
 	PUSH SIZEOF p1Health
 	PUSH OFFSET p1Health
-	PUSH 16
+	PUSH 15
 	Call PutAtScreen
 
 	PUSH 35
 	PUSH 1
 	PUSH SIZEOF p2Health
 	PUSH OFFSET p2Health
-	PUSH 16
+	PUSH 15
 	Call PutAtScreen
 	ret
 
@@ -514,8 +527,9 @@ main PROC
 
 		
 		CALL  Clrscr
-		CALL  DislayScreen
-		MOV   eax, 32
+		DislayScreen
+		;CALL DisplayScreenNC
+		MOV   eax, 200
 
 		
 		Call  Delay
