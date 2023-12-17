@@ -609,6 +609,42 @@ PutPlayersHealth PROC
 
 PutPlayersHealth ENDP
 
+Player1Wins MACRO
+mWriteStyledText
+	PUSHAD
+	mWritex "And the result of the contest!!!!!!"
+	mWritex "The New Champion of the World!!!! Khabib Nurmagomedov "
+	POPAD
+ENDM
+
+Player2Wins MACRO
+mWriteStyledText
+	pushad
+	mWritex "And the result of the contest!!!!!!"
+	mWritex "Still the Undisputeddddddd Champion of the World!!!! Khamzat The Wolf Chimaev"
+	popad
+ENDM
+
+WaitForNextMatch MACRO
+mWriteStyledText
+	CALL WaitMsg
+	mov p1Health[4], 57     ; setting health to 9
+	mov p2Health[4], 57
+ENDM
+
+checkPlayerHealth MACRO
+	.IF p1Health[4] == 48
+		Player2Wins
+		WaitForNextMatch
+	.ENDIF
+
+	.IF p2Health[4] == 48
+		Player1Wins
+		WaitForNextMatch
+	.ENDIF
+	
+ENDM
+
 
 main PROC
 	
@@ -636,13 +672,13 @@ main PROC
 
 		call PutPlayersHealth
 
-		
+		checkPlayerHealth
+
 		CALL  Clrscr
 		DislayScreen
 		;CALL DisplayScreenNC
 		MOV   eax, 150
 
-		
 		Call  Delay
 		
 	JMP LoopStart
