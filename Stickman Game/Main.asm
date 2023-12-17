@@ -77,7 +77,7 @@ INCLUDE lib\Irvine32.inc
 ;macrosss.inc 
 
 
-
+; displaying text in center and in a box
 StartPrompt macro 
 mWriteStyledText
 	pushad
@@ -418,9 +418,24 @@ p2CollisionCheck MACRO
 	.ENDIF
 ENDM
 
+PauseGame MACRO
+	; Pause Game
+	; If game is paused then wait for 'p' to unpause
+	; If game is not paused then wait for 'p' to pause
+	mov al, 0
+	.WHILE al != 'p'
+		CALL ReadKey
+	.ENDW
+ENDM
+
 
 ; Handle Keyoard Input
 LookForKey PROC
+	; Pause Game on P
+	CMP AL, 'p'
+	JNE NoPause
+	PauseGame
+	NoPause:
 	; ------------ Player1 CONTROLS ---------------
 
 	CMP AL, 'd'
@@ -649,7 +664,6 @@ ENDM
 main PROC
 	
 	StartPrompt 
-	Player1Wins
 	dalayx 1000
 	CALL GetMSeconds
 	MOV ebx, eax
