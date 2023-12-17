@@ -6,6 +6,7 @@ INCLUDE lib\Irvine32.inc
 	rows           EQU 15
 	columns        EQU 44
 	screen2D       BYTE rows*columns dup(32), 0
+	screenColors   BYTE rows*columns dup(0)
 
 	pJmpTime       EQU 10
 	pStateTime     EQU 10
@@ -244,16 +245,25 @@ setState PROC
 	ret
 setState ENDP
 
-collisionCheck MACRO
-	.IF p1State == States.attack
-		.IF p2State == States.defend
-		.ENDIF
-			mov eax, p1PosX
-			add eax, 8
-			cmp eax, p2PosX
-			;jl skipHealthDec
+p1CollisionCheck MACRO
+	.IF p2State != States.defend
+		mov eax, p1PosX
+		add eax, 7
+		cmp eax, p2PosX
+		.IF eax >= p2PosX
 			dec p2Health[4]
-			;skipHealthDec:
+		.ENDIF
+	.ENDIF
+ENDM
+
+p2CollisionCheck MACRO
+	.IF p1State != States.defend
+		mov eax, p1PosX
+		add eax, 7
+		cmp eax, p2PosX
+		.IF eax >= p2PosX
+			dec p1Health[4]
+		.ENDIF
 	.ENDIF
 ENDM
 
@@ -290,7 +300,7 @@ LookForKey PROC
 	JG P1NoSA
 	MOV p1state, States.attack
 	MOV p1StateTime, pStateTime ; Setting time for player1 state
-	collisionCheck
+	p1CollisionCheck
 	ret
 	P1NoSA:
 
@@ -299,7 +309,7 @@ LookForKey PROC
 	CMP p1State, States.default
 	JG P1NoSD
 	MOV p1state, States.defend
-	MOV p1StateTime, pStateTime ; Setting time for player1 state
+	MOV p1StateTime, pStateTime*2 ; Setting time for player1 state
 	ret
 	P1NoSD:
 
@@ -333,7 +343,7 @@ LookForKey PROC
 	JG P2NoSC
 	MOV p2state, States.attack
 	MOV p2StateTime, pStateTime ; Setting time for player1 state
-	collisionCheck
+	p2CollisionCheck
 	ret
 	P2NoSC:
 
@@ -342,7 +352,7 @@ LookForKey PROC
 	CMP p2State, States.default
 	JG P2NoSD
 	MOV p2state, States.defend
-	MOV p2StateTime, pStateTime ; Setting time for player1 state
+	MOV p2StateTime, pStateTime*2 ; Setting time for player1 state
 	ret
 	P2NoSD:
 
