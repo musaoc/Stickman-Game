@@ -84,22 +84,27 @@ mWriteStyledText
 	mov dl,50
 	mov dh,1
 	call gotoxy
-	mWritex "Introducing first"
+	mWritex "Welcome to the 300th edition of Kaka Fighting Championship"
 	mov dl,50
 	mov dh,4
 	call gotoxy
-	mWritex "The challenger from Eagle's Nest Dagestan Khabib Nurmagomedov"
+	mWritex "Introducing first!										   "		
+
+	mov dl,50
+	mov dh,5
+	call gotoxy
+	mWritex "The Callenger from Dagestan Khabib THE EAGLE Nurmagomedov "
 	mov eax,5000
 	call delay
 	mov dl,50
 	mov dh,7
 	call gotoxy
-	mWritex "Now!!! Introducing the Champion of the World,"
+	mWritex "Now!!! Introducing the undisputed Champion of the World,  "
 	call delay
 	mov dl,50
 	mov dh,10
 	call gotoxy	
-	mWritex "Khamzat The Wolf Chimaev "
+	mWritex "From Chechniya, Khamzat The Wolf Chimaev                  "
 	popad
 ENDM
 
