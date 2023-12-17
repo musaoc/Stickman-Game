@@ -6,7 +6,7 @@ INCLUDE lib\Irvine32.inc
 	rows           EQU 15
 	columns        EQU 44
 	screen2D       BYTE rows*columns dup(32), 0
-	screenColors   BYTE rows*columns dup(0)
+	screenColors   BYTE rows*columns dup(16)
 
 	pJmpTime       EQU 10
 	pStateTime     EQU 10
@@ -109,19 +109,23 @@ PutAtScreen PROC
 	; y position of screen
 	; size of string
 	; offset of string
+	; color
 
-	LOCAL x: DWORD, y: DWORD
+	LOCAL x: DWORD, y: DWORD , color: DWORD
 	; moving parameters into x and y
-	MOV eax, [ebp + 20]
+	MOV eax, [ebp + 24]
 	MOV x, eax
-	MOV eax, [ebp + 16]
+	MOV eax, [ebp + 20]
 	MOV y, eax
 
+	MOV eax, [ebp + 8]
+	MOV color, eax
+
 	; moving length of string into ecx
-	MOV ecx, [ebp + 12]
+	MOV ecx, [ebp + 16]
 
 	; moving offset of array
-	MOV edx, [ebp + 8]
+	MOV edx, [ebp + 12]
 	; iterator for array
 	MOV ebx, 0
 
@@ -144,6 +148,10 @@ PutAtScreen PROC
 		; moving character into screen2D
 		MOV cl, [edx + ebx]
 		MOV screen2D[eax], cl
+
+		; moving color into screenColors
+		MOV ecx, color
+		MOV screenColors[eax], cl
 		
 		INC x
 		INC ebx
@@ -153,7 +161,7 @@ PutAtScreen PROC
 		JMP endprocedure
 	newLineCame:
 		INC y
-		MOV eax, [ebp + 20]
+		MOV eax, [ebp + 24]
 		MOV x, eax
 		INC ebx
 
@@ -161,7 +169,7 @@ PutAtScreen PROC
 		LOOP LoopStart
 
 	endprocedure:
-	ret 16
+	ret 20
 
 PutAtScreen ENDP
 
@@ -198,6 +206,7 @@ InitializeScreen PROC
 	push 0
 	push sizeof screenBoundary
 	push offset screenBoundary
+	push 16
 	Call PutAtScreen
 	
 	; displaying lower boundary
@@ -205,6 +214,7 @@ InitializeScreen PROC
 	push rows-1
 	push sizeof screenBoundary
 	push offset screenBoundary
+	push 16
 	CALL PutAtScreen
 
 	ret
@@ -408,6 +418,7 @@ PutPlayer1 PROC
 		JMP ShowPlayer
 
 	ShowPlayer:
+		PUSH 16
 		CALL PutAtScreen
 	ret
 PutPlayer1 ENDP
@@ -451,6 +462,7 @@ PutPlayer2 PROC
 		JMP ShowPlayer
 
 	ShowPlayer:
+		PUSH 16
 		CALL PutAtScreen
 	ret
 PutPlayer2 ENDP
@@ -463,12 +475,14 @@ PutPlayersHealth PROC
 	PUSH 1
 	PUSH SIZEOF p1Health
 	PUSH OFFSET p1Health
+	PUSH 16
 	Call PutAtScreen
 
 	PUSH 35
 	PUSH 1
 	PUSH SIZEOF p2Health
 	PUSH OFFSET p2Health
+	PUSH 16
 	Call PutAtScreen
 	ret
 
