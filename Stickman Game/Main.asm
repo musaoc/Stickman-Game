@@ -81,30 +81,30 @@ INCLUDE lib\Irvine32.inc
 StartPrompt macro 
 mWriteStyledText
 	pushad
-	mov dl,50
+	mov dl,40
 	mov dh,1
 	call gotoxy
 	mWritex "Welcome to the 300th edition of Kaka Fighting Championship"
-	mov dl,50
+	mov dl,40
 	mov dh,4
 	call gotoxy
 	mWritex "Introducing first!										   "		
 
-	mov dl,50
+	mov dl,40
 	mov dh,5
 	call gotoxy
 	mWritex "The Callenger from Dagestan Khabib THE EAGLE Nurmagomedov "
 	mov eax,5000
 	call delay
-	mov dl,50
+	mov dl,40
 	mov dh,7
 	call gotoxy
 	mWritex "Now!!! Introducing the undisputed Champion of the World,  "
 	call delay
-	mov dl,50
+	mov dl,40
 	mov dh,10
 	call gotoxy	
-	mWritex "From Chechniya, Khamzat The Wolf Chimaev                  "
+	mWritex "From Chechniya, Khamzat The Wolf Chimaev                   "
 	popad
 ENDM
 
