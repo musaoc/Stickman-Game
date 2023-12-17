@@ -83,6 +83,26 @@ States STRUCT
 	defend  BYTE 2
 States ENDS
 
+
+Colors STRUCT
+	BLACK         DWORD 0
+	BLUE          DWORD 1
+	GREEN         DWORD 2
+	CYAN          DWORD 3
+	RED           DWORD 4
+	MAGNETA       DWORD 5
+	BROWN         DWORD 6
+	GREY_LIGHT    DWORD 7
+	GREY_DARK     DWORD 8
+	BLUE_LIGHT    DWORD 9
+	GREEN_LIGHT   DWORD 10
+	RED_LIGHT     DWORD 12
+	MAGNETA_LIGHT DWORD 13
+	YELLOW        DWORD 14
+	WHITE         DWORD 15
+
+Colors ENDS
+
 ; Put String into the screen
 PutAtScreen PROC
 	; x position of screen
