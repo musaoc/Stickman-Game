@@ -85,21 +85,21 @@ States ENDS
 
 
 Colors STRUCT
-	BLACK         DWORD 0
-	BLUE          DWORD 1
-	GREEN         DWORD 2
-	CYAN          DWORD 3
-	RED           DWORD 4
-	MAGNETA       DWORD 5
-	BROWN         DWORD 6
-	GREY_LIGHT    DWORD 7
-	GREY_DARK     DWORD 8
-	BLUE_LIGHT    DWORD 9
-	GREEN_LIGHT   DWORD 10
-	RED_LIGHT     DWORD 12
-	MAGNETA_LIGHT DWORD 13
-	YELLOW        DWORD 14
-	WHITE         DWORD 15
+	BLACK         DWORD 0b
+	BLUE          DWORD 1b
+	GREEN         DWORD 10b
+	CYAN          DWORD 11b
+	RED           DWORD 100b
+	MAGNETA       DWORD 101b
+	BROWN         DWORD 110b
+	GREY_LIGHT    DWORD 111b
+	GREY_DARK     DWORD 1000b
+	BLUE_LIGHT    DWORD 1001b
+	GREEN_LIGHT   DWORD 1010b
+	RED_LIGHT     DWORD 1011b
+	MAGNETA_LIGHT DWORD 1100b
+	YELLOW        DWORD 1101b
+	WHITE         DWORD 1110b
 
 Colors ENDS
 
@@ -146,16 +146,17 @@ PutAtScreen PROC
 		JE newLineCame
 		
 		; moving character into screen2D
-		cmp cl, 32
-		je DontSetColor
 		MOV cl, [edx + ebx]
 		MOV screen2D[eax], cl
-		DontSetColor:
 
+		cmp cl, 32
+		je DontSetColor
+	
 		; moving color into screenColors
 		MOV ecx, color
 		MOV screenColors[eax], cl
-		
+
+		DontSetColor:
 		INC x
 		INC ebx
 
@@ -185,6 +186,7 @@ InitializeScreen PROC
 
 	LoopS:
 		MOV screen2D[ecx - 1], 32
+		MOV screenColors[ecx - 1], 15
 		LOOP LoopS
 
 	MOV eax, 0
@@ -431,7 +433,7 @@ PutPlayer1 PROC
 		JMP ShowPlayer
 
 	ShowPlayer:
-		PUSH Colors.BLUE
+		PUSH 1             ; setting blue color
 		CALL PutAtScreen
 	ret
 PutPlayer1 ENDP
@@ -475,7 +477,7 @@ PutPlayer2 PROC
 		JMP ShowPlayer
 
 	ShowPlayer:
-		PUSH 15
+		PUSH 4            ; setting red color
 		CALL PutAtScreen
 	ret
 PutPlayer2 ENDP
@@ -488,14 +490,14 @@ PutPlayersHealth PROC
 	PUSH 1
 	PUSH SIZEOF p1Health
 	PUSH OFFSET p1Health
-	PUSH 15
+	PUSH 1               ; setting health color to Blue
 	Call PutAtScreen
 
 	PUSH 35
 	PUSH 1
 	PUSH SIZEOF p2Health
 	PUSH OFFSET p2Health
-	PUSH 15
+	PUSH 4
 	Call PutAtScreen
 	ret
 
@@ -529,7 +531,7 @@ main PROC
 		CALL  Clrscr
 		DislayScreen
 		;CALL DisplayScreenNC
-		MOV   eax, 200
+		MOV   eax, 150
 
 		
 		Call  Delay
