@@ -11,9 +11,9 @@ INCLUDE lib\Irvine32.inc
 
 	pJmpTime       EQU 3
 	pStateTime     EQU 3
-	UFCx Byte "        ___  ___  ",0dh,
-			 "  |   | |    |	", 0dh,
-	          " |   | |=== |	", 0dh,
+	UFCx Byte "        ___  ___  ",0dh,0ah,
+			  " |   | |    |	", 0dh,0ah,
+	          " |   | |=== |	", 0dh,0ah,
 			  " |___| |    |___	",0
 	; -------------------------------------------
 
@@ -672,9 +672,8 @@ ENDM
 main PROC
 
 	mWriteStyledText
-	mov dl,40
-	mov dh,0
-	call GOTOXY
+
+
 	mov edx,offset UFCx
 	call WriteString
 	StartPrompt 
